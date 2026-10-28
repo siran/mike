@@ -17,6 +17,22 @@ class InstrumentTests(unittest.TestCase):
         self.assertEqual(canonical_hash(self.world), canonical_hash(generate(42, 3)))
         self.assertNotEqual(self.task["start"], generate(43, 3)["tasks"][0]["start"])
 
+    def test_cli_imports_and_digests_its_source(self):
+        from mike.cli import source_sha256
+        self.assertRegex(source_sha256(), r"^[0-9a-f]{64}$")
+
+    def test_schema_changes_only_the_record_prefix(self):
+        old, new = generate(42, 3, schema=1), generate(42, 3, schema=2)
+        self.assertEqual((old["schema"], new["schema"]), (1, 2))
+        self.assertEqual([t["question"] for t in old["tasks"]], [t["question"] for t in new["tasks"]])
+        for a, b in zip(old["records"], new["records"]):
+            self.assertEqual((a["id"][0], b["id"][0], a["id"][1:]), ("R", "F", b["id"][1:]))
+            self.assertEqual((a["subject"], a["object"]), (b["subject"], b["object"]))
+        entity_prefixes = {v[0] for r in new["records"] for v in (r["subject"], r["object"])}
+        self.assertNotIn("F", entity_prefixes)
+        with self.assertRaises(ValueError):
+            generate(42, 3, schema=3)
+
     def test_search_is_atomic_and_disabled_has_no_records(self):
         tools = Tools(self.world["records"])
         result = tools.execute({"action": "search", "entity": self.task["start"]})

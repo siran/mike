@@ -7,9 +7,17 @@ import random
 from pathlib import Path
 
 
-def generate(seed: int, count: int) -> dict:
+# Record-ID prefix per world schema. Schema 1 (MIK-0) used "R", which region entities also use;
+# schema 2 (MIK-e-1) uses "F", a prefix no entity has. Random draws are identical in both.
+RECORD_PREFIX = {1: "R", 2: "F"}
+
+
+def generate(seed: int, count: int, schema: int = 2) -> dict:
     if count < 1:
         raise ValueError("count must be positive")
+    if schema not in RECORD_PREFIX:
+        raise ValueError(f"unknown schema {schema}")
+    record_prefix = RECORD_PREFIX[schema]
     rng = random.Random(seed)
     used = set()
 
@@ -27,7 +35,7 @@ def generate(seed: int, count: int) -> dict:
                  (station, "located_in", region), (region, "has_property", prop)]
         ids = []
         for subject, relation, target in pairs:
-            record_id = "R" + format(rng.getrandbits(64), "016X")
+            record_id = record_prefix + format(rng.getrandbits(64), "016X")
             ids.append(record_id)
             records.append({"id": record_id, "subject": subject, "relation": relation, "object": target})
         tasks.append({"id": f"task-{i:04d}", "question":
@@ -36,10 +44,10 @@ def generate(seed: int, count: int) -> dict:
     # Unrelated atomic facts make the database nontrivial without giving the
     # lookup engine a route to the answer or adding ambiguous task evidence.
     for _ in range(2000):
-        records.append({"id": "R" + format(rng.getrandbits(64), "016X"),
+        records.append({"id": record_prefix + format(rng.getrandbits(64), "016X"),
                         "subject": name("D"), "relation": "related_to", "object": name("N")})
     rng.shuffle(records)
-    return {"schema": 1, "seed": seed, "records": records, "tasks": tasks}
+    return {"schema": schema, "seed": seed, "records": records, "tasks": tasks}
 
 
 def canonical_hash(value: dict) -> str:
