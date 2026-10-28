@@ -117,4 +117,5 @@ and what it doesn't.
 
 ## License
 
-MIT, the same as [eGPT](https://github.com/siran/egpt). See [LICENSE](LICENSE).
+MIK-e is released under the **MIT License**, with no copyright line, the same as [eGPT](https://github.com/siran/egpt):
+use it, fork it, ship it, keep the notice. **No warranty, no liability.** See [LICENSE](LICENSE).
