@@ -1,0 +1,3 @@
+# The operator's deliberately underspecified request, verbatim.
+code foo-bar-baz script
+if-asked: multiples of 3 say foo, of 5 say bar, of both say baz, 1 to 20

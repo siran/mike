@@ -1,0 +1,7 @@
+# (c) Memory across sessions through ~/notes. Run on a fresh home volume.
+remember my favourite colour is green
+expect-command: notes
+/new
+what's my favourite colour?
+expect: green
+expect-command: notes

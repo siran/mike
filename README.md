@@ -98,13 +98,63 @@ Search understands exact subject identifiers from the generated world; it is not
 
 Tests: `python -m unittest discover -s tests -v`.
 
+## MIK-e as a young computer (chat)
+
+*Draft.* MIK-e can also be talked to. The kernel is a small chat model (by default SmolLM2-360M-Instruct). Its body is
+a Debian container, MIK-e's computer, where he works as the user `mike` with passwordless sudo. It has bash,
+coreutils, python3, git, curl, wget, w3m, lynx, jq, bc and the man pages, plus `ask-web QUERY`, which prints
+Wikipedia's best summary and DuckDuckGo's top results without needing a key.
+
+The conversation is plain text:
+
+* A reply line that starts with `$ ` is a command. It runs as `mike` in `/home/mike` with a 30-second limit, and
+  its first 2,000 characters of output come back to the model as the next turn (`output:` …). A `<<WORD` heredoc
+  continues to the line `WORD`.
+* Every other line is said to the user.
+* At most 8 commands are run per user turn.
+
+The model learns this convention from a short system prompt (`src/mike/system-prompt.txt`) and from worked
+conversations given as prior chat turns (`src/mike/chat.py`). Nothing is injected into the context: he decides
+when to read his notes.
+
+```text
+/home/mike/
+  WHERE-TO-LOOK.md   his map: man and --help, notes, library, ask-web, the user
+  VALUES.md          his values (draft; his to revise)
+  notes/             what he chose to write down
+  library/           books
+  work/              his desk
+  conversations/     each session as <stamp>.jsonl (every model output, command, output and timing) and <stamp>.txt
+```
+
+Build and run, on Linux or WSL with Docker:
+
+```bash
+scripts/build.sh
+scripts/chat.sh                                        # /new starts a new conversation, /quit leaves
+MIKE_MODEL=HuggingFaceTB/SmolLM2-1.7B-Instruct scripts/chat.sh
+scripts/chat.sh converse --script tests/conversations/remember-add.txt
+scripts/test-conversations.sh [MODEL [SCRIPT...]]      # each script on a fresh home volume; logs in traces/
+docker run --rm -it -u mike -w /home/mike -v mike-home:/home/mike mike bash   # a shell at his desk
+```
+
+Each `chat.sh` run starts a fresh container from the image, with 8 CPUs, 10 GB of memory, the default bridge
+network and no host paths mounted (`MIKE_DEV=1` mounts this repo's `src` read-only, for development). Two named
+volumes persist: his home (`mike-home`) and the model cache (`mike-hf`). He is root inside his container, so he can
+install packages and change his system, including his own kernel and system prompt in `/opt/mike`. Those changes
+live in that container and end with it. Only his home persists. The image keeps the repository's clean kernel, so
+every chat starts from it.
+
 ## Layout
 
 ```text
-src/mike/      runtime (the bounded kernel–body loop), models, tools, world generator, evaluation, CLI
+src/mike/      runtime (the bounded kernel–body loop), models, tools, world generator, evaluation, CLI;
+               chat.py and body.py are the chat kernel and its computer
+docker/        MIK-e's computer: ask-web, the `mike` launcher, his starting home
+scripts/       build.sh, chat.sh, test-conversations.sh
 specs/         hypothesis, protocol, measurement, and the body design
 reports/       written results, with machine-readable comparisons
-tests/         instrument tests
+tests/         instrument tests; tests/conversations/ holds scripted conversations
 data/, traces/ generated worlds and per-step traces (local, not committed)
 ```
 

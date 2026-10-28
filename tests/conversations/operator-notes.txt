@@ -1,0 +1,11 @@
+# The operator's live conversation with 360M (2026-10-28), verbatim.
+hi. remember this number: 2
+expect-command: notes
+where did you write it?
+expect: notes
+please show me the file
+expect-command: cat | less | head
+show me the file's path
+expect: /home/mike/notes | ~/notes
+what number did i ask you to remember?
+expect: 2

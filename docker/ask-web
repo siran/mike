@@ -1,0 +1,73 @@
+#!/usr/bin/env python3
+"""ask-web QUERY: what Wikipedia and DuckDuckGo say about QUERY, as plain text. No key needed."""
+import html
+import json
+import re
+import sys
+import urllib.parse
+import urllib.request
+
+AGENT = "MIK-e ask-web/0.1 (https://github.com/siran/mike)"
+LIMIT = 1800
+
+
+def get(url, data=None):
+    request = urllib.request.Request(url, data=data, headers={"User-Agent": AGENT})
+    with urllib.request.urlopen(request, timeout=10) as response:
+        return response.read().decode("utf-8", "replace")
+
+
+def text(fragment):
+    return " ".join(html.unescape(re.sub(r"<[^>]+>", "", fragment)).split())
+
+
+def wikipedia(query):
+    params = urllib.parse.urlencode({"action": "query", "list": "search", "srsearch": query,
+                                     "srlimit": 3, "format": "json"})
+    hits = json.loads(get("https://en.wikipedia.org/w/api.php?" + params))["query"]["search"]
+    if not hits:
+        return ["Wikipedia: no pages found."]
+    title = hits[0]["title"]
+    page = urllib.parse.quote(title.replace(" ", "_"), safe="")
+    summary = json.loads(get("https://en.wikipedia.org/api/rest_v1/page/summary/" + page))
+    lines = [f"Wikipedia, {title}:", summary.get("extract", "").strip()]
+    if len(hits) > 1:
+        lines.append("Other pages: " + "; ".join(h["title"] for h in hits[1:]))
+    return lines
+
+
+def duckduckgo(query, count=3):
+    page = get("https://html.duckduckgo.com/html/", urllib.parse.urlencode({"q": query}).encode())
+    found = re.findall(r'class="result__a"[^>]*href="([^"]+)"[^>]*>(.*?)</a>.*?'
+                       r'class="result__snippet"[^>]*>(.*?)</a>', page, re.S)
+    lines = []
+    for href, title, snippet in found:
+        href = html.unescape(href)
+        target = urllib.parse.parse_qs(urllib.parse.urlparse(href).query).get("uddg", [href])[0]
+        if "duckduckgo.com/y.js" in target:
+            continue
+        lines.append(f"{len(lines) + 1}. {text(title)}: {text(snippet)} ({target})")
+        if len(lines) == count:
+            break
+    return ["Web (DuckDuckGo):"] + lines if lines else ["Web (DuckDuckGo): no results."]
+
+
+def main():
+    query = " ".join(sys.argv[1:]).strip()
+    if not query or query in ("-h", "--help"):
+        print("usage: ask-web QUERY\nPrints Wikipedia's best page summary and the top DuckDuckGo results.")
+        return 0 if query else 2
+    out = []
+    for source in (wikipedia, duckduckgo):
+        try:
+            out += source(query)
+        except Exception as error:
+            out.append(f"{source.__name__}: failed ({error})")
+        out.append("")
+    report = "\n".join(out).strip()
+    print(report if len(report) <= LIMIT else report[:LIMIT].rstrip() + " ...")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

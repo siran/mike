@@ -2,11 +2,15 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import platform
 import sys
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 
+from .body import Body
+from .chat import DEFAULT_MODEL, Session, Transcript, chat, converse, printer, read_script
 from .evaluate import compare_runs, evaluate_one, summarize, symbolic_baseline
 from .models import TransformersModel
 from .runtime import run
@@ -18,6 +22,45 @@ def write_json(path, value):
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(value, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n")
+
+
+def default_user():
+    """As root (the container's kernel), commands run as `mike`; otherwise as the current user."""
+    if os.environ.get("MIKE_USER"):
+        return os.environ["MIKE_USER"]
+    if hasattr(os, "geteuid") and os.geteuid() == 0:
+        import pwd
+        try:
+            pwd.getpwnam("mike")
+            return "mike"
+        except KeyError:
+            pass
+    return None
+
+
+def talk(args):
+    script = None
+    if args.command == "converse":
+        script = read_script(sys.stdin.read() if args.script == "-" else Path(args.script).read_text(encoding="utf-8"))
+    body = Body(args.home, args.user, args.timeout, args.max_output)
+    conversations = Path(args.conversations or Path(body.home) / "conversations")
+    print(f"loading {args.model} ...", flush=True)
+    start = time.perf_counter()
+    model = TransformersModel(args.model, args.revision, args.max_new_tokens, args.threads,
+                              reuse_cache=not args.no_reuse_cache, repetition_penalty=args.repetition_penalty,
+                              no_repeat_ngram_size=args.no_repeat_ngram_size)
+    print(f"loaded in {time.perf_counter() - start:.1f} s; {model.metadata['parameters']:,} parameters, "
+          f"{model.metadata['torch_threads']} threads; commands run as {body.user or 'the current user'} "
+          f"in {body.home}; transcripts in {conversations}", flush=True)
+
+    def new_session():
+        return Session(model, body, Transcript(conversations), args.max_steps, args.context_tokens, printer)
+
+    if script is None:
+        chat(new_session)
+        return 0
+    result = converse(new_session, script)
+    return 0 if result["passed"] == len(result["checks"]) else 1
 
 
 def main():
@@ -47,7 +90,30 @@ def main():
     compare = subs.add_parser("compare", help="Compare persisted evaluation traces by task ID")
     compare.add_argument("paths", nargs="+")
     compare.add_argument("--out", required=True)
+    for name, text in (("chat", "Talk with MIK-e"), ("converse", "Play a scripted conversation and report")):
+        p = subs.add_parser(name, help=text)
+        p.add_argument("--model", default=os.environ.get("MIKE_MODEL") or DEFAULT_MODEL)
+        p.add_argument("--revision", default=None)
+        p.add_argument("--user", default=default_user(), help="run commands as this user")
+        p.add_argument("--home", default=None, help="working directory for commands (default: the user's home)")
+        p.add_argument("--conversations", default=None, help="transcript directory (default: HOME/conversations)")
+        p.add_argument("--max-steps", type=int, default=8, help="commands per user turn")
+        p.add_argument("--timeout", type=float, default=30.0, help="seconds per command")
+        p.add_argument("--max-output", type=int, default=2000, help="characters of command output shown")
+        p.add_argument("--max-new-tokens", type=int, default=200)
+        p.add_argument("--context-tokens", type=int, default=6000)
+        p.add_argument("--threads", type=int, default=int(os.environ.get("MIKE_THREADS", 0)) or None)
+        p.add_argument("--repetition-penalty", type=float, default=1.0,
+                       help="Hugging Face repetition_penalty; it also counts the prompt and worked examples")
+        p.add_argument("--no-repeat-ngram-size", type=int, default=0,
+                       help="Hugging Face no_repeat_ngram_size; it also counts the prompt and worked examples")
+        p.add_argument("--no-reuse-cache", action="store_true",
+                       help="recompute the whole prompt every call instead of reusing the shared prefix")
+        if name == "converse":
+            p.add_argument("--script", required=True, help="script file, or - for stdin")
     args = parser.parse_args()
+    if args.command in ("chat", "converse"):
+        return talk(args)
     if args.command == "compare":
         runs = []
         for name in args.paths:
@@ -104,4 +170,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    sys.exit(main())

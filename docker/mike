@@ -1,0 +1,2 @@
+#!/bin/sh
+PYTHONPATH=/opt/mike/src exec /opt/mike/venv/bin/python -m mike.cli "$@"

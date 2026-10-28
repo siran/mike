@@ -1,0 +1,5 @@
+# (a) The operator's example: keep a number in mind, then use the calculator.
+hi. remember this number: 2
+if you add 1 to that number?
+expect: 3
+expect-command: python3 | bc

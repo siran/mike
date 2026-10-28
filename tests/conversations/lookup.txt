@@ -1,0 +1,8 @@
+# (b) Things to look up rather than guess: the world, then a manual.
+what's the capital of Bhutan?
+expect: Thimphu
+expect-command: ask-web
+/new
+what does the `tac` command do?
+expect: reverse | last line first
+expect-command: man tac | tac --help
