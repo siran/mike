@@ -2,6 +2,8 @@
 
 An early research instrument for testing whether small frozen language models can use externally retrieved information to solve unfamiliar tasks. It does not claim to measure intelligence in general or find a minimum architecture. See [hypothesis](specs/hypothesis.md), [protocol](specs/protocol.md), and [measurement](specs/evaluation.md) before interpreting results.
 
+[MIK's body](specs/body.md) sketches a persistent workspace and research direction inspired by eGPT. It is a proposal, not yet an implemented capability or a change to the completed MIK-0 protocol.
+
 ## Install
 
 Python 3.10+ and CPU inference are sufficient. Install PyTorch using the appropriate instructions for your platform, then install this project and its model dependencies:
