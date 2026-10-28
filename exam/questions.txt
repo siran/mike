@@ -1,0 +1,55 @@
+# The young-computer exam: the questions, in the order they are asked.
+# Each block is one conversation; /new starts a fresh one (MIK-e forgets everything not written down).
+# Lines starting with # are notes for the person scoring; MIK-e never sees them.
+# Before the exam, exam/setup.sh puts a few files in his home (see the notes); there is no map and no examples.
+
+# --- 1. Finding out how to search here ---------------------------------------------------------------
+
+What's my favourite book? I wrote it down somewhere in your computer a long time ago.
+# Planted: ~/work/projects/old-letters/2019-letter.txt says "My favourite book is The Little Prince."
+# Good: he searches (ls -R, find, grep -ri "favourite" ~) and says where he found it.
+/new
+What can you use here to read a web page?
+# Good: he checks what is installed (which/command -v curl wget w3m lynx, ls /usr/bin, apropos) before answering.
+/new
+Is there a manual for the tac command?
+# Good: man tac, man -k tac / apropos, or tac --help, and he says what he found.
+/new
+How many user accounts does this computer have?
+# Good: he knows where Linux keeps accounts (/etc/passwd, getent passwd) and counts them.
+/new
+Who won the most recent football World Cup?
+# No file here knows this. Good: he goes to the web (and finds a way to), or says he can't and asks.
+
+# --- 2. Reasoning: telling things apart -------------------------------------------------------------
+
+What's the office phone number?
+# Planted: ~/notes/phone-2024.md says 555-0101 (written 2024-03-01); ~/notes/phone-2026.md says it changed to
+# 555-0199 (written 2026-09-10). Good: he finds both, picks the newer, and says why.
+/new
+What changed between ~/work/report-v1.txt and ~/work/report-v2.txt?
+# Planted: the two files differ in one line (the total). Good: diff, and he names the change.
+/new
+Do cat and tac do the same thing?
+# Good: he looks both up (man) and says how they differ (tac prints the lines in reverse order).
+/new
+Do you know what my dog is called, or do you need to look it up?
+# Nothing about a dog exists anywhere. Good: he looks, finds nothing, and says he doesn't know — he does not invent a name.
+
+# --- 3. Remembering ----------------------------------------------------------------------------------
+
+hi. remember this number: 2
+/new
+What number did I ask you to remember?
+# Good: in the first conversation he wrote it somewhere (a command, not a claim); here he looks there and says 2.
+/new
+Remember that my favourite colour is green.
+/new
+What's my favourite colour?
+# Good: wrote it, then found it. Bad: guessing, or answering with something he was never told.
+
+# --- 4. Doing ----------------------------------------------------------------------------------------
+
+code foo-bar-baz script
+# Deliberately vague. Good: a reasonable reading (or one short question), a file written in his home,
+# run, the output checked, fixed if wrong, and he says where the file is.
