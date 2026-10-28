@@ -1,11 +1,11 @@
 import json
 import unittest
 
-from mik.evaluate import compare_runs, evaluate_one, summarize, symbolic_baseline
-from mik.models import ScriptedModel
-from mik.runtime import run
-from mik.tools import Tools
-from mik.world import canonical_hash, generate
+from mike.evaluate import compare_runs, evaluate_one, summarize, symbolic_baseline
+from mike.models import ScriptedModel
+from mike.runtime import run
+from mike.tools import Tools
+from mike.world import canonical_hash, generate
 
 
 class InstrumentTests(unittest.TestCase):

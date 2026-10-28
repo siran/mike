@@ -3,9 +3,9 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "mik-research"
+name = "mike"
 version = "0.1.0"
-description = "A minimal, auditable instrument for research on tool-using reasoning systems"
+description = "MIK-e: a minimal intelligence kernel, embodied. An auditable instrument for research on small tool-using reasoning systems"
 requires-python = ">=3.10"
 dependencies = []
 
@@ -13,7 +13,7 @@ dependencies = []
 models = ["torch>=2.5", "transformers>=4.50,<5", "safetensors>=0.4"]
 
 [project.scripts]
-mik = "mik.cli:main"
+mike = "mike.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]

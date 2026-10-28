@@ -21,7 +21,7 @@ def write_json(path, value):
 
 
 def main():
-    parser = argparse.ArgumentParser(prog="mik")
+    parser = argparse.ArgumentParser(prog="mike")
     subs = parser.add_subparsers(dest="command", required=True)
     gen = subs.add_parser("generate", help="Generate a private synthetic world and answer key")
     gen.add_argument("--seed", type=int, required=True)
