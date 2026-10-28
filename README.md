@@ -114,3 +114,7 @@ Rule discovery, contradictory or misleading evidence, composing tasks, persisten
 questions, calibration, multiple independent worlds, stronger reference models, and full system-cost
 accounting are all future work. The point of starting small is to know exactly what each step shows —
 and what it doesn't.
+
+## License
+
+MIT, the same as [eGPT](https://github.com/siran/egpt). See [LICENSE](LICENSE).
