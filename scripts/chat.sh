@@ -17,6 +17,10 @@ args=(--rm -i --init --hostname mike
       -v "${MIKE_HF_VOLUME:-mike-hf}:/var/cache/huggingface")
 if [ -t 0 ] && [ -t 1 ]; then args+=(-t); fi
 if [ -n "${MIKE_MODEL:-}" ]; then args+=(-e MIKE_MODEL="$MIKE_MODEL"); fi
+if [ -n "${MIKE_NETWORK:-}" ]; then args+=(--network "$MIKE_NETWORK"); fi
+for v in MIKE_SERVER MIKE_SCAFFOLD MIKE_THINKING MIKE_MAX_NEW_TOKENS; do
+  if [ -n "${!v:-}" ]; then args+=(-e "$v=${!v}"); fi
+done
 if [ "${MIKE_DEV:-}" = 1 ]; then args+=(-v "$repo/src:/opt/mike/src:ro"); fi
 if [ $# -eq 0 ]; then set -- chat; fi
 exec docker run "${args[@]}" "${MIKE_IMAGE:-mike}" mike "$@"

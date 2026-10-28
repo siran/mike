@@ -5,6 +5,7 @@ import hashlib
 import json
 import time
 from datetime import datetime, timezone
+import os
 from pathlib import Path
 
 from .body import has_command, parse_reply
@@ -77,7 +78,13 @@ LOOK_UP = _turns(
 EXAMPLES = [LOOK_UP, WRITE_AND_SHOW, RECALL_AND_ADD]  # order probed: traces/probes/v2-*.jsonl
 
 
+PLAIN_SYSTEM_FILE = Path(__file__).with_name("system-prompt-plain.txt")
+
+
 def opening(system: str | None = None) -> list[dict]:
+    if os.environ.get("MIKE_SCAFFOLD") == "none":  # the exam: his situation in plain words, no examples
+        plain = PLAIN_SYSTEM_FILE.read_text(encoding="utf-8").strip() if system is None else system
+        return [{"role": "system", "content": plain}]
     system = SYSTEM_FILE.read_text(encoding="utf-8").strip() if system is None else system
     return [{"role": "system", "content": system}] + [m for example in EXAMPLES for m in example]
 

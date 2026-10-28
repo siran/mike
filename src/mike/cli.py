@@ -46,9 +46,13 @@ def talk(args):
     conversations = Path(args.conversations or Path(body.home) / "conversations")
     print(f"loading {args.model} ...", flush=True)
     start = time.perf_counter()
-    model = TransformersModel(args.model, args.revision, args.max_new_tokens, args.threads,
-                              reuse_cache=not args.no_reuse_cache, repetition_penalty=args.repetition_penalty,
-                              no_repeat_ngram_size=args.no_repeat_ngram_size)
+    if os.environ.get("MIKE_SERVER"):  # a candidate kernel served by llama.cpp (exam/run.sh)
+        from mike.server_model import ServerModel
+        model = ServerModel(os.environ["MIKE_SERVER"], int(os.environ.get("MIKE_MAX_NEW_TOKENS") or 1024))
+    else:
+        model = TransformersModel(args.model, args.revision, args.max_new_tokens, args.threads,
+                                  reuse_cache=not args.no_reuse_cache, repetition_penalty=args.repetition_penalty,
+                                  no_repeat_ngram_size=args.no_repeat_ngram_size)
     print(f"loaded in {time.perf_counter() - start:.1f} s; {model.metadata['parameters']:,} parameters, "
           f"{model.metadata['torch_threads']} threads; commands run as {body.user or 'the current user'} "
           f"in {body.home}; transcripts in {conversations}", flush=True)
