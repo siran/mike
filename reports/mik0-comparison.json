@@ -1,0 +1,203 @@
+{
+  "runs": [
+    {
+      "label": "traces/heldout-135-tools.jsonl",
+      "model": {
+        "model": "HuggingFaceTB/SmolLM2-135M-Instruct",
+        "requested_revision": "12fd25f77366fa6b3b4b768ec3050bf629380bac",
+        "resolved_revision": "12fd25f77366fa6b3b4b768ec3050bf629380bac",
+        "parameters": 134515008,
+        "torch": "2.14.1+cpu",
+        "transformers": "4.57.6",
+        "dtype": "float32",
+        "device": "cpu",
+        "decoding": "greedy"
+      },
+      "world_sha256": "23833d5d4ab83c0b8ec5aac1c13610800873982591674135cf2243ea93b1e5fb",
+      "tools_enabled": true,
+      "complete": true,
+      "summary": {
+        "tasks": 100,
+        "correct": 0,
+        "accuracy": 0.0,
+        "accuracy_wilson_95": [
+          3.469446951953614e-18,
+          0.03699349820698568
+        ],
+        "correct_with_complete_evidence": 0,
+        "abstentions": 0,
+        "statuses": {
+          "invalid_action": 100
+        },
+        "searches": 0,
+        "input_tokens": 15765,
+        "output_tokens": 3510,
+        "wall_seconds": 519.3834480002988,
+        "process_cpu_seconds": 1964.140625
+      }
+    },
+    {
+      "label": "traces/heldout-135-no-tools.jsonl",
+      "model": {
+        "model": "HuggingFaceTB/SmolLM2-135M-Instruct",
+        "requested_revision": "12fd25f77366fa6b3b4b768ec3050bf629380bac",
+        "resolved_revision": "12fd25f77366fa6b3b4b768ec3050bf629380bac",
+        "parameters": 134515008,
+        "torch": "2.14.1+cpu",
+        "transformers": "4.57.6",
+        "dtype": "float32",
+        "device": "cpu",
+        "decoding": "greedy",
+        "torch_threads": 4
+      },
+      "world_sha256": "23833d5d4ab83c0b8ec5aac1c13610800873982591674135cf2243ea93b1e5fb",
+      "tools_enabled": false,
+      "complete": true,
+      "summary": {
+        "tasks": 100,
+        "correct": 0,
+        "accuracy": 0.0,
+        "accuracy_wilson_95": [
+          3.469446951953614e-18,
+          0.03699349820698568
+        ],
+        "correct_with_complete_evidence": 0,
+        "abstentions": 0,
+        "statuses": {
+          "invalid_action": 100
+        },
+        "searches": 0,
+        "input_tokens": 15765,
+        "output_tokens": 3510,
+        "wall_seconds": 557.4270963002928,
+        "process_cpu_seconds": 2113.59375
+      }
+    },
+    {
+      "label": "traces/heldout-360-tools.jsonl",
+      "model": {
+        "model": "HuggingFaceTB/SmolLM2-360M-Instruct",
+        "requested_revision": "a10cc1512eabd3dde888204e902eca88bddb4951",
+        "resolved_revision": "a10cc1512eabd3dde888204e902eca88bddb4951",
+        "parameters": 361821120,
+        "torch": "2.14.1+cpu",
+        "transformers": "4.57.6",
+        "dtype": "float32",
+        "device": "cpu",
+        "decoding": "greedy",
+        "torch_threads": 2
+      },
+      "world_sha256": "23833d5d4ab83c0b8ec5aac1c13610800873982591674135cf2243ea93b1e5fb",
+      "tools_enabled": true,
+      "complete": true,
+      "summary": {
+        "tasks": 100,
+        "correct": 0,
+        "accuracy": 0.0,
+        "accuracy_wilson_95": [
+          3.469446951953614e-18,
+          0.03699349820698568
+        ],
+        "correct_with_complete_evidence": 0,
+        "abstentions": 0,
+        "statuses": {
+          "invalid_action": 70,
+          "answered": 30
+        },
+        "searches": 0,
+        "input_tokens": 15765,
+        "output_tokens": 3650,
+        "wall_seconds": 922.0895765984897,
+        "process_cpu_seconds": 1803.203125
+      }
+    },
+    {
+      "label": "traces/heldout-360-no-tools.jsonl",
+      "model": {
+        "model": "HuggingFaceTB/SmolLM2-360M-Instruct",
+        "requested_revision": "a10cc1512eabd3dde888204e902eca88bddb4951",
+        "resolved_revision": "a10cc1512eabd3dde888204e902eca88bddb4951",
+        "parameters": 361821120,
+        "torch": "2.14.1+cpu",
+        "transformers": "4.57.6",
+        "dtype": "float32",
+        "device": "cpu",
+        "decoding": "greedy",
+        "torch_threads": 2
+      },
+      "world_sha256": "23833d5d4ab83c0b8ec5aac1c13610800873982591674135cf2243ea93b1e5fb",
+      "tools_enabled": false,
+      "complete": true,
+      "summary": {
+        "tasks": 100,
+        "correct": 0,
+        "accuracy": 0.0,
+        "accuracy_wilson_95": [
+          3.469446951953614e-18,
+          0.03699349820698568
+        ],
+        "correct_with_complete_evidence": 0,
+        "abstentions": 0,
+        "statuses": {
+          "invalid_action": 70,
+          "answered": 30
+        },
+        "searches": 0,
+        "input_tokens": 15765,
+        "output_tokens": 3650,
+        "wall_seconds": 921.670853298856,
+        "process_cpu_seconds": 1800.328125
+      }
+    }
+  ],
+  "paired": [
+    {
+      "left": "traces/heldout-135-tools.jsonl",
+      "right": "traces/heldout-135-no-tools.jsonl",
+      "tasks": 100,
+      "both_correct": 0,
+      "only_left_correct": 0,
+      "only_right_correct": 0
+    },
+    {
+      "left": "traces/heldout-135-tools.jsonl",
+      "right": "traces/heldout-360-tools.jsonl",
+      "tasks": 100,
+      "both_correct": 0,
+      "only_left_correct": 0,
+      "only_right_correct": 0
+    },
+    {
+      "left": "traces/heldout-135-tools.jsonl",
+      "right": "traces/heldout-360-no-tools.jsonl",
+      "tasks": 100,
+      "both_correct": 0,
+      "only_left_correct": 0,
+      "only_right_correct": 0
+    },
+    {
+      "left": "traces/heldout-135-no-tools.jsonl",
+      "right": "traces/heldout-360-tools.jsonl",
+      "tasks": 100,
+      "both_correct": 0,
+      "only_left_correct": 0,
+      "only_right_correct": 0
+    },
+    {
+      "left": "traces/heldout-135-no-tools.jsonl",
+      "right": "traces/heldout-360-no-tools.jsonl",
+      "tasks": 100,
+      "both_correct": 0,
+      "only_left_correct": 0,
+      "only_right_correct": 0
+    },
+    {
+      "left": "traces/heldout-360-tools.jsonl",
+      "right": "traces/heldout-360-no-tools.jsonl",
+      "tasks": 100,
+      "both_correct": 0,
+      "only_left_correct": 0,
+      "only_right_correct": 0
+    }
+  ]
+}

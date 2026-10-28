@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "mik-research"
+version = "0.1.0"
+description = "A minimal, auditable instrument for research on tool-using reasoning systems"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.optional-dependencies]
+models = ["torch>=2.5", "transformers>=4.50,<5", "safetensors>=0.4"]
+
+[project.scripts]
+mik = "mik.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
