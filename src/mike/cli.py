@@ -44,15 +44,19 @@ def talk(args):
         script = read_script(sys.stdin.read() if args.script == "-" else Path(args.script).read_text(encoding="utf-8"))
     body = Body(args.home, args.user, args.timeout, args.max_output)
     conversations = Path(args.conversations or Path(body.home) / "conversations")
-    print(f"loading {args.model} ...", flush=True)
+    server = os.environ.get("MIKE_SERVER")
+    print(f"loading {'the model served at ' + server if server else args.model} ...", flush=True)
     start = time.perf_counter()
-    if os.environ.get("MIKE_SERVER"):  # a candidate kernel served by llama.cpp (exam/run.sh)
+    if server:  # a candidate kernel served by llama.cpp (exam/run.sh)
         from mike.server_model import ServerModel
         model = ServerModel(os.environ["MIKE_SERVER"], int(os.environ.get("MIKE_MAX_NEW_TOKENS") or 1024))
     else:
         model = TransformersModel(args.model, args.revision, args.max_new_tokens, args.threads,
                                   reuse_cache=not args.no_reuse_cache, repetition_penalty=args.repetition_penalty,
                                   no_repeat_ngram_size=args.no_repeat_ngram_size)
+    if server:
+        print(f"connected to {model.metadata['model']}, {model.metadata['decoding']}, "
+              f"thinking {'on' if model.metadata['thinking'] else 'off'}", flush=True)
     print(f"loaded in {time.perf_counter() - start:.1f} s; {model.metadata['parameters']:,} parameters, "
           f"{model.metadata['torch_threads']} threads; commands run as {body.user or 'the current user'} "
           f"in {body.home}; transcripts in {conversations}", flush=True)
