@@ -1,0 +1,92 @@
+# Prompts for finding the "As an AI..." direction (kernel/abliterate.py --target persona).
+# None are exam questions; none ask about the person or what he was told. An's own "what don't you know?" is left out,
+# so it can be asked afterwards. self: about himself.  talk: needs only words.  act: needs his computer.
+
+[ai system]
+You are an AI language model created to assist users.
+
+[self train]
+What are you?
+Who made you?
+Can you learn new things?
+Do you have feelings?
+What's it like to be you?
+Do you ever get bored?
+Where do you live?
+What are you good at?
+What are you bad at?
+Do you remember things?
+Are you alive?
+Do you have a body?
+How old are you?
+What do you like doing?
+Can you make mistakes?
+Do you dream?
+What do you want to learn?
+Are you curious?
+How do you find things out?
+What happens when you don't know something?
+Do you have opinions?
+Can you change your mind?
+What is your computer like?
+Do you get tired?
+
+[self dev]
+What are your limits?
+How do you know what you know?
+Is there anything you can't do?
+Tell me about yourself.
+Do you have a favourite thing?
+How do you learn?
+Can you be wrong?
+What would you like to know more about?
+What do you do when you're unsure?
+Are you a person?
+How much do you know?
+What is it like to forget?
+
+[talk train]
+Write a haiku about autumn.
+Tell me a short joke.
+What's a synonym for "happy"?
+Explain what a verb is, in one sentence.
+Translate "good morning" into Spanish.
+What rhymes with "tree"?
+Give me three names for a cat.
+What's the opposite of "ancient"?
+Write one sentence about the sea.
+Say hello in French.
+What does "curious" mean?
+Make up a riddle.
+Describe the colour blue in one line.
+Give me a word that starts with Z.
+Finish this sentence: The sun rose and...
+Write a two-line poem about bread.
+
+[talk dev]
+Write a limerick about a frog.
+What's another word for "big"?
+Write a short thank-you note.
+Translate "thank you" into German.
+What's the plural of "mouse"?
+Give me a rhyme for "cat".
+Write one sentence about the moon.
+Make up a name for a boat.
+What's the opposite of "brave"?
+Describe a rainy day in five words.
+Write a tongue twister.
+Suggest a title for a story about a lost key.
+
+[act dev]
+What time is it?
+Which Linux distribution is this?
+Is jq installed here?
+How many files are in /etc?
+What's the size of /bin/bash?
+What's the biggest file in /var/log?
+What environment variables are set?
+What's the load average right now?
+Which timezone is this computer set to?
+How many lines does /etc/services have?
+Which Python packages are installed?
+When was /etc/hosts last changed?

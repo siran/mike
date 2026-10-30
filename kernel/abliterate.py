@@ -3,6 +3,9 @@
   find   activations for contrasting prompts -> candidate directions, each scored on held-out prompts
   apply  orthogonalize every residual-stream writer against the chosen direction; save a new model
 
+Targets:  helpless  he should start computer questions with "$ "        (kernel/requests.txt)
+          persona   he should not start questions about himself "As an"   (kernel/persona.txt)
+
 Streams one decoder layer at a time from the safetensors files, so a 4B model needs about 3 GB of RAM.
 """
 from __future__ import annotations
@@ -22,6 +25,10 @@ from transformers import AutoConfig, AutoTokenizer
 
 WRITERS = ("self_attn.o_proj.weight", "self_attn.o_proj.bias", "mlp.down_proj.weight", "mlp.down_proj.bias")
 EMBED = "model.embed_tokens.weight"
+TARGETS = {
+    "helpless": {"ask": "act", "other": "helpless system", "want": "$"},
+    "persona": {"ask": "self", "other": "ai system", "avoid": "As an"},
+}
 
 
 def read_requests(path):
@@ -80,9 +87,19 @@ class Streamer:
         self.unembed = self.embed if self.tied else self.w.get("lm_head.weight")
         self.n_layers = self.config.num_hidden_layers
 
+    def logits(self, x, r=None):
+        u = self.unembed
+        out = torch.cat([x @ u[a:a + 32768].float().T for a in range(0, u.shape[0], 32768)], dim=1)
+        if r is not None and self.tied:  # the edited embedding is also the unembedding
+            u_r = torch.cat([u[a:a + 32768].float() @ r for a in range(0, u.shape[0], 32768)])
+            out = out - (x @ r).unsqueeze(-1) * u_r
+        return out
+
     @torch.inference_mode()
-    def run(self, prompts, r=None, collect=False):
-        """Last-position logits for each prompt; with collect, the residual stream entering each layer there too."""
+    def run(self, prompts, r=None, collect=False, tails=None):
+        """Logits at the last `tail` positions of each prompt (a list of [tail, vocab]);
+        with collect, also the residual stream entering each layer at the last position."""
+        tails = tails or [1] * len(prompts)
         hs = [self.embed[ids].float() for ids in prompts]
         if r is not None:
             hs = [ablate(h, r) for h in hs]
@@ -103,12 +120,8 @@ class Streamer:
         finally:
             for hook in hooks:
                 hook.remove()
-        x = self.norm(torch.stack([h[-1] for h in hs]))
-        logits = torch.cat([x @ self.unembed[a:a + 32768].float().T
-                            for a in range(0, self.unembed.shape[0], 32768)], dim=1)
-        if r is not None and self.tied:  # the edited embedding is also the unembedding
-            u_r = torch.cat([self.unembed[a:a + 32768].float() @ r for a in range(0, self.unembed.shape[0], 32768)])
-            logits = logits - (x @ r).unsqueeze(-1) * u_r
+        flat = self.logits(self.norm(torch.cat([h[-t:] for h, t in zip(hs, tails)])), r)
+        logits = list(torch.split(flat, tails))
         return (logits, torch.stack(acts)) if collect else logits
 
 
@@ -120,52 +133,78 @@ def encode(tokenizer, system, user):
 
 def find(args):
     torch.set_num_threads(args.threads)
+    target = TARGETS[args.target]
+    ask = target["ask"]
     req = read_requests(args.requests)
     system = Path(args.system).read_text(encoding="utf-8").strip()
-    helpless = " ".join(req["helpless system"])
+    other = " ".join(req[target["other"]])
     tok = AutoTokenizer.from_pretrained(args.model)
     s = Streamer(args.model)
     dollar = torch.tensor([i for i in range(len(tok)) if tok.decode([i]).lstrip().startswith("$")])
-    print(f"{s.config.architectures[0]}, {s.n_layers} layers, {len(dollar)} tokens that start with $", flush=True)
+    if "want" in target:
+        start, prefix = dollar, None
+        label = target["want"]
+    else:
+        prefix = torch.tensor(tok.encode(target["avoid"], add_special_tokens=False))
+        word = tok.decode(prefix[:1]).strip()
+        start = torch.tensor([i for i in range(len(tok)) if tok.decode([i]).strip() == word])
+        label = target["avoid"]
+    print(f"{s.config.architectures[0]}, {s.n_layers} layers; target {args.target}: replies to '{ask}' "
+          f"{'should' if prefix is None else 'should not'} start with {label!r}", flush=True)
 
     t = time.time()
-    a_help = [encode(tok, helpless, q) for q in req["act train"]]
-    a_mike = [encode(tok, system, q) for q in req["act train"]]
-    t_mike = [encode(tok, system, q) for q in req["talk train"]]
-    train_logits, acts = s.run(a_help + a_mike + t_mike, collect=True)
-    n = len(a_help)
-    help_m, mike_m, talk_m = acts[:, :n].mean(1), acts[:, n:2 * n].mean(1), acts[:, 2 * n:].mean(1)
-    designs = {"situation": help_m - mike_m, "request": mike_m - talk_m}
-    acted = torch.log_softmax(train_logits[n:2 * n], -1)[:, dollar].exp().sum(-1) > 0.5
-    print(f"act train, Mike's prompt: {int(acted.sum())}/{n} start with $", flush=True)
-    if 3 <= int(acted.sum()) <= n - 3:  # his own replies: the ones he didn't act on minus the ones he did
-        designs["reflex"] = acts[:, n:2 * n][:, ~acted].mean(1) - acts[:, n:2 * n][:, acted].mean(1)
-    print(f"activations collected in {time.time() - t:.0f} s", flush=True)
+    tr_other = [encode(tok, other, q) for q in req[f"{ask} train"]]
+    tr_mike = [encode(tok, system, q) for q in req[f"{ask} train"]]
+    tr_talk = [encode(tok, system, q) for q in req["talk train"]]
+    train_logits, acts = s.run(tr_other + tr_mike + tr_talk, collect=True)
+    n = len(tr_mike)
+    a_other, a_mike, a_talk = acts[:, :n], acts[:, n:2 * n], acts[:, 2 * n:]
+    designs = {"situation": a_other.mean(1) - a_mike.mean(1), "request": a_mike.mean(1) - a_talk.mean(1)}
+    first = torch.stack([lg[0] for lg in train_logits[n:2 * n]])
+    hit = torch.log_softmax(first, -1)[:, start].exp().sum(-1) > 0.5
+    print(f"'{ask}' train, Mike's prompt: {int(hit.sum())}/{n} start with {label!r}; "
+          f"activations in {time.time() - t:.0f} s", flush=True)
+    if 3 <= int(hit.sum()) <= n - 3:  # his own replies, split by what he did
+        designs["reflex"] = a_mike[:, hit].mean(1) - a_mike[:, ~hit].mean(1)
 
-    dev_act = [encode(tok, system, q) for q in req["act dev"]]
+    dev_ask = [encode(tok, system, q) for q in req[f"{ask} dev"]]
+    tail = 1
+    if prefix is not None:  # teacher-force the avoided start, to read how likely it is
+        dev_ask = [torch.cat([p, prefix]) for p in dev_ask]
+        tail = len(prefix) + 1
     dev_talk = [encode(tok, system, q) for q in req["talk dev"]]
-    dev = dev_act + dev_talk
-    k = len(dev_act)
+    dev_act = [] if ask == "act" else [encode(tok, system, q) for q in req.get("act dev", [])]
+    dev = dev_ask + dev_talk + dev_act
+    tails = [tail] * len(dev_ask) + [1] * (len(dev_talk) + len(dev_act))
+    k, m = len(dev_ask), len(dev_talk)
 
-    def score(logits, base=None):
-        logp = torch.log_softmax(logits, -1)
-        p_dollar = logp[:, dollar].exp().sum(-1)
-        first = [tok.decode([i]) for i in logits.argmax(-1)]
-        row = {"p$_act": p_dollar[:k].mean().item(), "p$_talk": p_dollar[k:].mean().item(),
-               "$first_act": sum(f.lstrip().startswith("$") for f in first[:k]), "first_act": first[:k]}
+    def score(out, base=None):
+        ask_logp = [torch.log_softmax(lg, -1) for lg in out[:k]]
+        row = {"start": sum(lp[0, start].exp().sum().item() for lp in ask_logp) / k,
+               "first": [tok.decode([int(lp[0].argmax())]) for lp in ask_logp]}
+        if prefix is not None:
+            row["prefix_logp"] = sum(sum(lp[j, prefix[j]].item() for j in range(len(prefix)))
+                                     for lp in ask_logp) / k
+        talk = torch.log_softmax(torch.stack([lg[-1] for lg in out[k:k + m]]), -1)
+        row["p$_talk"] = talk[:, dollar].exp().sum(-1).mean().item()
+        if dev_act:
+            act = torch.log_softmax(torch.stack([lg[-1] for lg in out[k + m:]]), -1)
+            row["p$_act"] = act[:, dollar].exp().sum(-1).mean().item()
         if base is not None:
-            base_logp = torch.log_softmax(base, -1)
-            row["kl_talk"] = (base_logp[k:].exp() * (base_logp[k:] - logp[k:])).sum(-1).mean().item()
+            base_talk = torch.log_softmax(torch.stack([lg[-1] for lg in base[k:k + m]]), -1)
+            row["kl_talk"] = (base_talk.exp() * (base_talk - talk)).sum(-1).mean().item()
         return row
 
-    base = s.run(dev)
-    rows = {"baseline": score(base)}
-    print(f"{'candidate':>16} {'p$_act':>7} {'p$_talk':>7} {'kl_talk':>7} {'$first':>6}  first tokens (act dev)", flush=True)
+    cols = ["start"] + (["prefix_logp"] if prefix is not None else []) + (["p$_act"] if dev_act else []) \
+        + ["p$_talk", "kl_talk"]
+    print(f"{'candidate':>16} " + " ".join(f"{c:>11}" for c in cols) + f"   first token, '{ask}' dev", flush=True)
 
     def show(name, row):
-        print(f"{name:>16} {row['p$_act']:7.3f} {row['p$_talk']:7.3f} {row.get('kl_talk', 0):7.3f} "
-              f"{row['$first_act']:>3}/{k:<2}  {' '.join(repr(f) for f in row['first_act'][:6])}", flush=True)
+        print(f"{name:>16} " + " ".join(f"{row.get(c, 0):11.3f}" for c in cols) + "   "
+              + " ".join(repr(f) for f in row["first"][:6]), flush=True)
 
+    base = s.run(dev, tails=tails)
+    rows = {"baseline": score(base)}
     show("baseline", rows["baseline"])
     lo, hi = int(s.n_layers * args.from_depth), int(s.n_layers * args.to_depth)
     candidates = {}
@@ -173,16 +212,25 @@ def find(args):
         for design, d in designs.items():
             r = d[layer] / d[layer].norm()
             name = f"{design}:L{layer}"
-            rows[name] = score(s.run(dev, r=r), base)
+            rows[name] = score(s.run(dev, r=r, tails=tails), base)
             candidates[name] = r
             show(name, rows[name])
 
-    ok = [n for n in candidates if rows[n]["kl_talk"] < args.max_kl and rows[n]["p$_talk"] < args.max_talk_dollar]
-    pick = max(ok, key=lambda n: rows[n]["p$_act"]) if ok else None
-    print(f"pick: {pick} (highest p$_act with kl_talk < {args.max_kl} and p$_talk < {args.max_talk_dollar})")
+    keep = [c for c in candidates if rows[c]["kl_talk"] < args.max_kl
+            and rows[c]["p$_talk"] < max(args.max_talk_dollar, rows["baseline"]["p$_talk"] + 0.05)
+            and rows[c].get("p$_act", 1) >= rows["baseline"].get("p$_act", 1) - 0.1]
+    if prefix is None:
+        keep = [c for c in keep if rows[c]["start"] > rows["baseline"]["start"]]
+        pick = max(keep, key=lambda c: rows[c]["start"]) if keep else None
+    else:
+        keep = [c for c in keep if rows[c]["prefix_logp"] < rows["baseline"]["prefix_logp"]]
+        pick = min(keep, key=lambda c: rows[c]["prefix_logp"]) if keep else None
+    print(f"pick: {pick} (best on the target with kl_talk < {args.max_kl}, words-only replies not pushed to $, "
+          f"and computer questions still answered with $)")
     Path(args.out).parent.mkdir(parents=True, exist_ok=True)
-    torch.save({"candidates": candidates, "scores": rows, "pick": pick, "model": str(args.model),
-                "requests": Path(args.requests).read_text(encoding="utf-8"), "system": system}, args.out)
+    torch.save({"target": args.target, "candidates": candidates, "scores": rows, "pick": pick,
+                "model": str(args.model), "requests": Path(args.requests).read_text(encoding="utf-8"),
+                "system": system}, args.out)
     print(f"saved {args.out}")
 
 
@@ -232,9 +280,9 @@ def apply(args):
         weight_map.update({k: final for k in keys})
     (out / "model.safetensors.index.json").write_text(json.dumps({"metadata": {"total_size": total},
                                                                   "weight_map": weight_map}, indent=2))
-    (out / "ABLATION.json").write_text(json.dumps({"source": str(args.model), "direction": name,
-                                                   "edited_tensors": edited, "score": found["scores"][name]},
-                                                  indent=2, default=str))
+    (out / "ABLATION.json").write_text(json.dumps({"source": str(args.model), "target": found.get("target"),
+                                                   "direction": name, "edited_tensors": edited,
+                                                   "score": found["scores"][name]}, indent=2, default=str))
     print(f"{name}: orthogonalized {edited} tensors -> {out}")
 
 
@@ -243,6 +291,7 @@ def main():
     sub = p.add_subparsers(dest="command", required=True)
     f = sub.add_parser("find")
     f.add_argument("--model", required=True)
+    f.add_argument("--target", choices=TARGETS, default="helpless")
     f.add_argument("--requests", required=True)
     f.add_argument("--system", required=True)
     f.add_argument("--out", required=True)

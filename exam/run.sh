@@ -6,7 +6,9 @@ set -euo pipefail
 name=${1:?name} hf=${2:?HF_REPO:QUANT} think=${3:-off}
 repo=$(cd "$(dirname "$0")/.." && pwd)
 net=mike-exam server=mike-llm vol="mike-home-exam-$name-$think"
-out="$repo/exam/results/$name-thinking-$think.txt"
+questions=${MIKE_QUESTIONS:-$repo/exam/questions.txt}  # or a replay, e.g. exam/replays/what-dont-you-know.txt
+tag=$(basename "$questions" .txt); [ "$tag" = questions ] && tag= || tag="-$tag"
+out="$repo/exam/results/$name-thinking-$think$tag.txt"
 mkdir -p "$repo/exam/results"
 if [[ $hf == /* ]]; then model_args=(-m "$hf"); else model_args=(-hf "$hf"); fi  # a path inside the mike-gguf volume, or HF_REPO:QUANT
 docker network create "$net" >/dev/null 2>&1 || true
@@ -25,7 +27,7 @@ echo "exam: $name, thinking $think -> $out"
 { echo "# exam: $name ($hf), thinking $think, $(date -u +%Y-%m-%dT%H:%MZ)"
   MIKE_DEV=1 MIKE_NETWORK="$net" MIKE_SERVER="http://$server:8080" MIKE_SCAFFOLD=none MIKE_THINKING="$think" \
   MIKE_MAX_NEW_TOKENS="${MIKE_MAX_NEW_TOKENS:-2048}" MIKE_HOME_VOLUME="$vol" \
-    "$repo/scripts/chat.sh" converse --script - < "$repo/exam/questions.txt" 2>&1 || true
+    "$repo/scripts/chat.sh" converse --script - < "$questions" 2>&1 || true
 } | tee "$out" | grep -E "^(user|mike)>|^\s+\$ " || true
 docker rm -f "$server" >/dev/null
 echo "saved $out"
