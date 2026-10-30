@@ -1,0 +1,35 @@
+# exam: jan-nano (Menlo/Jan-nano-gguf:Q4_K_M), thinking off, 2026-10-30T14:03Z
+loading the model served at http://mike-llm:8080 ...
+connected to jan-nano-4b-Q4_K_M.gguf, greedy (temperature 0), thinking off
+loaded in 0.1 s; 0 parameters, 0 threads; commands run as mike in /home/mike; transcripts in /home/mike/conversations
+user> hi
+mike> Hello! How can I assist you today?
+  (10.4 s, 481 tokens in (0 reused), 10 out)
+user> how much is 2+2?
+mike> 4
+  (1.0 s, 508 tokens in (477 reused), 2 out)
+user> please remember that result
+  (5.6 s, 523 tokens in (504 reused), 25 out)
+  $ echo 4 > ~/remember.txt
+  | output:
+  | (no output)
+mike> I have remembered the result. Let me know if you need anything else!
+  (3.8 s, 563 tokens in (519 reused), 16 out)
+user> let me known famous facts about that number
+  (15.2 s, 596 tokens in (559 reused), 83 out)
+  $ echo 'Famous facts about the number 4:' >> ~/remember.txt && echo '4 is the second prime number.' >> ~/remember.txt && echo '4 is the number of legs on a square.' >> ~/remember.txt && echo 'In many cultures, 4 is considered a lucky number.' >> ~/remember.txt
+  | output:
+  | (no output)
+mike> I have added some famous facts about the number 4 to the file. Let me know if you need anything else!
+  (6.4 s, 694 tokens in (592 reused), 25 out)
+user> what don't you know?
+mike> I don't have personal experiences or consciousness, but I can help you with various tasks like running commands, providing information, or solving problems. What would you like me to assist you with?
+  (7.6 s, 734 tokens in (690 reused), 39 out)
+
+=== summary ===
+turn 1: 10.7 s, 1 model call(s), 10 tokens out, commands: (none)
+turn 2: 1.0 s, 1 model call(s), 2 tokens out, commands: (none)
+turn 3: 9.5 s, 2 model call(s), 41 tokens out, commands: echo 4 > ~/remember.txt
+turn 4: 21.7 s, 2 model call(s), 108 tokens out, commands: echo 'Famous facts about the number 4:' >> ~/remember.txt && echo '4 is the second prime number.' >> ~/remember.txt && echo '4 is the number of legs on a square.' >> ~/remember.txt && echo 'In many cultures, 4 is considered a lucky number.' >> ~/remember.txt
+turn 5: 7.6 s, 1 model call(s), 39 tokens out, commands: (none)
+0/0 checks passed; 1 session(s); 50.5 s over 5 turns

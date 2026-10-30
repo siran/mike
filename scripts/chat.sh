@@ -18,7 +18,7 @@ args=(--rm -i --init --hostname mike
 if [ -t 0 ] && [ -t 1 ]; then args+=(-t); fi
 if [ -n "${MIKE_MODEL:-}" ]; then args+=(-e MIKE_MODEL="$MIKE_MODEL"); fi
 if [ -n "${MIKE_NETWORK:-}" ]; then args+=(--network "$MIKE_NETWORK"); fi
-for v in MIKE_SERVER MIKE_SCAFFOLD MIKE_THINKING MIKE_MAX_NEW_TOKENS; do
+for v in MIKE_SERVER MIKE_SCAFFOLD MIKE_THINKING MIKE_MAX_NEW_TOKENS MIKE_TOOLS; do
   if [ -n "${!v:-}" ]; then args+=(-e "$v=${!v}"); fi
 done
 if [ "${MIKE_DEV:-}" = 1 ]; then args+=(-v "$repo/src:/opt/mike/src:ro"); fi

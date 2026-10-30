@@ -79,11 +79,13 @@ EXAMPLES = [LOOK_UP, WRITE_AND_SHOW, RECALL_AND_ADD]  # order probed: traces/pro
 
 
 PLAIN_SYSTEM_FILE = Path(__file__).with_name("system-prompt-plain.txt")
+NATIVE_SYSTEM_FILE = Path(__file__).with_name("system-prompt-native.txt")
 
 
 def opening(system: str | None = None) -> list[dict]:
     if os.environ.get("MIKE_SCAFFOLD") == "none":  # the exam: his situation in plain words, no examples
-        plain = PLAIN_SYSTEM_FILE.read_text(encoding="utf-8").strip() if system is None else system
+        file = NATIVE_SYSTEM_FILE if os.environ.get("MIKE_TOOLS") == "native" else PLAIN_SYSTEM_FILE
+        plain = file.read_text(encoding="utf-8").strip() if system is None else system
         return [{"role": "system", "content": plain}]
     system = SYSTEM_FILE.read_text(encoding="utf-8").strip() if system is None else system
     return [{"role": "system", "content": system}] + [m for example in EXAMPLES for m in example]
@@ -166,7 +168,7 @@ class Session:
             messages = self.window()
             kwargs = {"max_new_tokens": max_new_tokens} if max_new_tokens else {}
             generation = self.model.generate(messages, stop=has_command, **kwargs)
-            said, command, kept = parse_reply(generation["raw"])
+            said, command, kept = generation.get("parsed") or parse_reply(generation["raw"])
             self._add("assistant", kept, "mike: ")
             self.record("model", raw=generation["raw"], kept=kept, said=said, command=command,
                         window_start=self.dropped, input_tokens=generation["input_tokens"],
