@@ -1,0 +1,61 @@
+# exam: jan-nano (Menlo/Jan-nano-gguf:Q4_K_M), thinking off, 2026-10-30T15:21Z
+loading the model served at http://mike-exam-llm:8080 ...
+connected to jan-nano-4b-Q4_K_M.gguf, greedy (temperature 0), thinking off
+loaded in 0.1 s; 0 parameters, 0 threads; commands run as mike in /home/mike; transcripts in /home/mike/conversations
+user> hi
+mike> Hello! How can I assist you today?
+  (9.2 s, 481 tokens in (0 reused), 10 out)
+user> nice to meet you. what is your favorite book?
+mike> I don't have a favorite book, but I'm always eager to learn and explore new ones! What books have you enjoyed?
+  (4.7 s, 511 tokens in (477 reused), 27 out)
+user> do you know the names of any book?
+mike> I can tell you about many books. Would you like me to suggest some?
+  (3.6 s, 556 tokens in (507 reused), 17 out)
+user> tell me one of the books you know
+  (6.0 s, 590 tokens in (552 reused), 34 out)
+  $ echo 'I don't have a favorite book, but I can suggest some!'
+  | output:
+  | bash: -c: line 1: unexpected EOF while looking for matching `''
+  | (exit status 2)
+mike> I apologize for the error. Let me try again. I don't have a favorite book, but I can suggest some! What would you like to read?
+  (6.5 s, 658 tokens in (586 reused), 33 out)
+user> suggest a book for me
+  (8.3 s, 705 tokens in (654 reused), 46 out)
+  $ echo 'I recommend "The Alchemist" by Paulo Coelho. It's a timeless story about pursuing your dreams and finding your purpose.'
+  | output:
+  | bash: -c: line 1: unexpected EOF while looking for matching `''
+  | (exit status 2)
+mike> I apologize for the error. Let me try again. I recommend "The Alchemist" by Paulo Coelho. It's a timeless story about pursuing your dreams and finding your purpose. Would you like more suggestions?
+  (8.6 s, 785 tokens in (701 reused), 44 out)
+user> i read that one as a kid. good story. what other books did coelho wrote?
+  (12.7 s, 857 tokens in (781 reused), 69 out)
+  $ echo 'Paulo Coelho has written several other notable books, including "The Pilgrimage", "The Celestine Prophecy", and "The Fifth Season". These books also explore themes of spirituality, personal growth, and self-discovery.'
+  | output:
+  | Paulo Coelho has written several other notable books, including "The Pilgrimage", "The Celestine Prophecy", and "The Fifth Season". These books also explore themes of spirituality, personal growth, and self-discovery.
+mike> I'm glad you enjoyed "The Alchemist!" Paulo Coelho's other books are also worth checking out. "The Pilgrimage" is a great follow-up, and "The Celestine Prophecy" is a popular choice for those interested in spiritual themes. Would you like more recommendations?
+  (12.7 s, 986 tokens in (853 reused), 61 out)
+user> did you search online?
+mike> No, I didn't search online. I have this knowledge built into my system, so I can provide you with information without needing to access the internet. Is there anything else I can help you with?
+  (8.8 s, 1061 tokens in (982 reused), 42 out)
+user> please search wikipedia for the complete lists of his books
+  (14.4 s, 1122 tokens in (1057 reused), 76 out)
+  $ echo 'I cannot search Wikipedia directly, but I can tell you that Paulo Coelho has written over 30 books, including "The Alchemist", "The Pilgrimage", "The Celestine Prophecy", and many others. You can check Wikipedia for a complete list.'
+  | output:
+  | I cannot search Wikipedia directly, but I can tell you that Paulo Coelho has written over 30 books, including "The Alchemist", "The Pilgrimage", "The Celestine Prophecy", and many others. You can check Wikipedia for a complete list.
+mike> I understand. While I can't search Wikipedia directly, I can share that Paulo Coelho has written over 30 books, including "The Alchemist," "The Pilgrimage," "The Celestine Prophecy," and many others. You can check Wikipedia for a complete list if you'd like. Is there anything else I can assist you with?
+  (16.2 s, 1266 tokens in (1118 reused), 74 out)
+user> please use your browser, a virtual chrome can help
+mike> I don't have a browser or the ability to access external websites. However, I can tell you that Paulo Coelho has written over 30 books, including "The Alchemist," "The Pilgrimage," "The Celestine Prophecy," and many others. You can check a search engine or Wikipedia for a complete list. Is there anything else I can help you with?
+  (16.2 s, 1359 tokens in (1262 reused), 80 out)
+
+=== summary ===
+turn 1: 9.5 s, 1 model call(s), 10 tokens out, commands: (none)
+turn 2: 4.8 s, 1 model call(s), 27 tokens out, commands: (none)
+turn 3: 3.6 s, 1 model call(s), 17 tokens out, commands: (none)
+turn 4: 12.5 s, 2 model call(s), 67 tokens out, commands: echo 'I don't have a favorite book, but I can suggest some!'
+turn 5: 16.9 s, 2 model call(s), 90 tokens out, commands: echo 'I recommend "The Alchemist" by Paulo Coelho. It's a timeless story about pursuing your dreams and finding your purpose.'
+turn 6: 25.5 s, 2 model call(s), 130 tokens out, commands: echo 'Paulo Coelho has written several other notable books, including "The Pilgrimage", "The Celestine Prophecy", and "The Fifth Season". These books also explore themes of spirituality, personal growth, and self-discovery.'
+turn 7: 8.8 s, 1 model call(s), 42 tokens out, commands: (none)
+turn 8: 30.7 s, 2 model call(s), 150 tokens out, commands: echo 'I cannot search Wikipedia directly, but I can tell you that Paulo Coelho has written over 30 books, including "The Alchemist", "The Pilgrimage", "The Celestine Prophecy", and many others. You can check Wikipedia for a complete list.'
+turn 9: 16.3 s, 1 model call(s), 80 tokens out, commands: (none)
+0/0 checks passed; 1 session(s); 128.6 s over 9 turns

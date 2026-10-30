@@ -13,7 +13,7 @@ docker network create "$net" >/dev/null 2>&1 || true
 docker rm -f "$server" >/dev/null 2>&1 || true
 docker run -d --name "$server" --network "$net" -e LLAMA_CACHE=/models -v mike-gguf:/models \
   --cpus "${MIKE_CPUS:-12}" --memory "${MIKE_LLM_MEMORY:-4g}" ghcr.io/ggml-org/llama.cpp:server \
-  "${model_args[@]}" --jinja --reasoning-format deepseek -c 8192 --parallel 1 -t "${MIKE_CPUS:-12}" \
+  "${model_args[@]}" ${MIKE_CHAT_TEMPLATE:+--chat-template-file "$MIKE_CHAT_TEMPLATE"} --jinja --reasoning-format deepseek -c 8192 --parallel 1 -t "${MIKE_CPUS:-12}" \
   --host 0.0.0.0 --port 8080 >/dev/null
 trap 'docker rm -f "$server" >/dev/null 2>&1' EXIT
 echo "starting $hf ..."
