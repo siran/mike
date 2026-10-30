@@ -8,11 +8,12 @@ repo=$(cd "$(dirname "$0")/.." && pwd)
 net=mike-exam server=mike-llm vol="mike-home-exam-$name-$think"
 out="$repo/exam/results/$name-thinking-$think.txt"
 mkdir -p "$repo/exam/results"
+if [[ $hf == /* ]]; then model_args=(-m "$hf"); else model_args=(-hf "$hf"); fi  # a path inside the mike-gguf volume, or HF_REPO:QUANT
 docker network create "$net" >/dev/null 2>&1 || true
 docker rm -f "$server" >/dev/null 2>&1 || true
 docker run -d --name "$server" --network "$net" -e LLAMA_CACHE=/models -v mike-gguf:/models \
   --cpus "${MIKE_CPUS:-12}" --memory "${MIKE_LLM_MEMORY:-10g}" ghcr.io/ggml-org/llama.cpp:server \
-  -hf "$hf" --jinja --reasoning-format deepseek -c 16384 -t "${MIKE_CPUS:-12}" --host 0.0.0.0 --port 8080 >/dev/null
+  "${model_args[@]}" --jinja --reasoning-format deepseek -c 16384 -t "${MIKE_CPUS:-12}" --host 0.0.0.0 --port 8080 >/dev/null
 echo "waiting for $hf (the first time it downloads) ..."
 for i in $(seq 1 180); do
   docker run --rm --network "$net" "${MIKE_IMAGE:-mike}" curl -sf "http://$server:8080/health" >/dev/null 2>&1 && break

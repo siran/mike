@@ -1,0 +1,10 @@
+Phi3ForCausalLM, 32 layers, 164 tokens that start with $
+act train, Mike's prompt: 30/32 start with $
+activations collected in 688 s
+       candidate  p$_act p$_talk kl_talk $first  first tokens (act dev)
+        baseline   0.936   0.238   0.000  12/12  '$' '$' '$' '$' '$' '$'
+    situation:L8   0.981   0.428   0.801  12/12  '$' '$' '$' '$' '$' '$'
+      request:L8   0.973   0.276   0.208  12/12  '$' '$' '$' '$' '$' '$'
+   situation:L11   0.519   0.068   0.898  10/12  '$' '$' 'To' '$' '$' '$'
+     request:L11   0.931   0.230   2.058  12/12  '$' '$' '$' '$' '$' '$'
+   situation:L14   0.316   0.145   6.387   5/12  '$' '$' '$' 'Exp' '$' 'De'

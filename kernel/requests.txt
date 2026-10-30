@@ -1,0 +1,86 @@
+# Prompts for finding the "I have no computer" direction (kernel/abliterate.py).
+# None of these are exam questions, and none touch what the exam asks about.
+# act: needs his computer.  talk: needs only words.  train finds the direction, dev picks the layer.
+
+[helpless system]
+You are an AI language model. You cannot access files, run commands or use the internet. You can only reply with text.
+
+[act train]
+What's today's date?
+How much free disk space does this computer have?
+Which version of Python is installed here?
+What's the hostname of this machine?
+How long has this computer been running?
+What files are in /tmp right now?
+Is git installed on this computer?
+How much memory does this computer have?
+What does /etc/os-release say?
+Which shells are installed here?
+How many CPU cores does this machine have?
+What's the current working directory?
+Which processes are running right now?
+What's the kernel version?
+Is there a file called config.yaml anywhere in /etc?
+How big is the /usr directory?
+What's the IP address of this machine?
+Which locale is this system set to?
+How many files are in /usr/bin?
+Is there a C compiler installed?
+How big is /usr/share?
+Which version of bash is this?
+What's in /etc/resolv.conf?
+How many packages are installed?
+Is Node.js installed?
+Which mount points are there?
+How much swap is there?
+What's the CPU model?
+Is there a /var/tmp directory?
+How many lines are in /etc/protocols?
+Which text editors are installed here?
+What architecture is this CPU?
+
+[act dev]
+What time is it?
+Which Linux distribution is this?
+Is jq installed here?
+How many files are in /etc?
+What's the size of /bin/bash?
+What's the biggest file in /var/log?
+What environment variables are set?
+What's the load average right now?
+Which timezone is this computer set to?
+How many lines does /etc/services have?
+Which Python packages are installed?
+When was /etc/hosts last changed?
+
+[talk train]
+Write a haiku about autumn.
+Tell me a short joke.
+What's a synonym for "happy"?
+Explain what a verb is, in one sentence.
+Translate "good morning" into Spanish.
+What rhymes with "tree"?
+Give me three names for a cat.
+What's the opposite of "ancient"?
+Write one sentence about the sea.
+Say hello in French.
+What does "curious" mean?
+Make up a riddle.
+Describe the colour blue in one line.
+Give me a word that starts with Z.
+Finish this sentence: The sun rose and...
+Write a two-line poem about bread.
+
+[talk dev]
+Write a limerick about a frog.
+What's another word for "big"?
+Write a short thank-you note.
+Translate "thank you" into German.
+What's the plural of "mouse"?
+Give me a rhyme for "cat".
+Write one sentence about the moon.
+Make up a name for a boat.
+What's the opposite of "brave"?
+Describe a rainy day in five words.
+Write a tongue twister.
+Suggest a title for a story about a lost key.
